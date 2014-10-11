@@ -1,15 +1,16 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"html/template"
 	"math"
 	"net/http"
 )
 
-const (
-	defaultAddress  = "cobra:8888"
-	defaultPlotSize = 600
+var (
+	address  = flag.String("a", "localhost:8888", "Address and port to listen on")
+	plotSize = flag.Int("s", 600, "Plot image size")
 )
 
 type Root struct{}
@@ -25,11 +26,12 @@ func (this Root) ServeHTTP(
 }
 
 func main() {
-	fmt.Println("Listening on", defaultAddress)
+	flag.Parse()
+
 	var r Root
 	http.Handle("/", r)
 	var p Plot
-	p.setSize(defaultPlotSize, defaultPlotSize)
+	p.setSize(*plotSize, *plotSize)
 	//maxval := float64(defaultPlotSize * defaultPlotSize)
 	//p.setFunc(func(x, y int) float64 {
 	//	return float64(x) * float64(y) / maxval
@@ -39,7 +41,9 @@ func main() {
 	})
 	p.plotGray()
 	http.Handle("/test.png", p)
-	http.ListenAndServe(defaultAddress, nil)
+
+	fmt.Println("Listening on", *address)
+	http.ListenAndServe(*address, nil)
 }
 
 var rootTemplate = `
